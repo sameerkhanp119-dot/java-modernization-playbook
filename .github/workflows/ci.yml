@@ -1,0 +1,25 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - run: mvn -B verify
+      - run: java -jar target/java-modernization-playbook-1.0.0.jar
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - run: node --test demo/model.test.js
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: compatibility-test-reports
+          path: target/surefire-reports/
